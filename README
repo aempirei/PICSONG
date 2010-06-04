@@ -1,0 +1,65 @@
+
+PICSONG - a shitty PIC12F675 synthesizer package
+
+   Copyright(c) 2008
+   by Christopher Abad
+   aempirei@gmail.com
+
+software this requires:
+
+   gpasm (gputils) - GNU PIC Microcontroller GP Tools
+   g++ - GNU G++ Compiler
+   picp - PICStart Programmer
+   gmake - GNU Make
+   PICSTART Plus Programmer hardware
+
+hardware you NEED:
+
+   1 PIC12F675 8-bit microcontroller
+   1 1uF capacitor (c1)
+   1 tiny speaker
+   approximately 2-5VDC power supply
+
+hardware that is optional for the zobel network
+
+   1 0.1uF capacitor (c2)
+   1 10 ohm resistor (r1)
+
+optional hardware for the 'im working' indicator
+
+   1 LED (d1)
+   1 1000 ohm resistor (r2)
+
+the schematic is as follows:
+
+              +--+
+    +Vss <----|18|--| gnd
+              |27|
+        c1 +  |36|  d1    r2
+      +--|(---|45|--|/>--/\/\/\---| gnd
+      |       +--+
+      |   c2   
+      +--||--/\/\/\--| gnd
+      |         r1
+      |
+      +---===---| gnd
+         /___\
+
+   pin 1 - Vss (2-5vdc)
+   pin 4 - audio out
+   pin 5 - LED out
+   pin 8 - ground
+
+just do:
+
+   ./program-p12f675.sh risingsun.txt
+
+   or whatever song
+
+   i think i put 3 songs, stjames.txt, swinglow.txt and risingsun.txt
+
+thanks,
+aempirei
+
+
+

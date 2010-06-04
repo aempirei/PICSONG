@@ -1,0 +1,13 @@
+tempo = 60
+envelope = 0 8 8 7  6 6 6 0
+music = 
+2d3 1f3
+2a3 1a3 2a3 1a3 2g3 2a3 1g3
+2f3 1e3 4d3 2d3 1f3
+2a3 1a3 2a3 2d4 2bb3
+4a3 2-3 2d3 1f3
+2a3 1a3 2a3 1a3 2g3 2a3
+2f3 1e3 4d3 2d3 1e3
+
+2f3 1e3 2d3 2a3 1g3 2f3
+6d3

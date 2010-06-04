@@ -1,0 +1,119 @@
+;
+;
+; PICSONG - A simple square-wave 12-tone synthesizer
+;
+; Copyright(c) 2008 by Christopher Abad
+; aempirei@gmail.com
+;
+;
+
+   list x=on,w=0,p=12f675
+   include "p12f675.inc"
+   __CONFIG _CPD_OFF & _CP_OFF & _BODEN_OFF & _MCLRE_OFF &_PWRTE_OFF & _WDT_OFF & _INTRC_OSC_NOCLKOUT
+
+   goto main
+
+   include "piclib.a"
+
+delay_var      equ   0x20
+long_delay_p1  equ   0x21
+long_delay_p2  equ   0x22
+long_delay_var equ   0x23
+note_hi_var    equ   0x24
+note_lo_var    equ   0x25
+
+
+; wave_fn(GPn, hz)
+; play exactly 1 cycle of frequency <hz> on pin GPn
+
+wave_fn macro GPn, hz               ; 2*ic
+
+   local ic = cpu_ips / (hz * 2)   ; instruction count
+
+   bcf GPIO, GPn                    ; 1
+   waitl (ic - .1)                  ; ic - 1
+
+   bsf GPIO, GPn                    ; 1
+   waitl (ic - .1)                  ; ic - 1
+
+   endm
+
+; note_fn(GPn, hz, duration)
+; play frequency <hz> on pin GPn for exactly duration 8th notes
+
+note_fn macro labelN, GPn, hz, duration
+
+   local cycles = hz * duration / .4
+   local hi = cycles / .255
+   local lo = cycles % .255
+
+   if (hi > 255)
+      error "duration is way too long"
+   endif      
+
+   if (hi < 0)
+      error "duration is negative"
+   endif
+
+   if (hi > 0)                   ; apply this branch only if we need more than 255 cycles
+                                 ; avoiding unneccesary code generation
+
+      movlw hi                   ; begin outer hi loop
+      movwf note_hi_var
+
+note_L1_#v(labelN)
+      movlw .255                 ; begin inner hi loop
+      movwf note_lo_var
+
+note_L2_#v(labelN)
+      wave_fn GPn, hz
+
+
+      loopf note_lo_var, note_L2_#v(labelN)
+      loopf note_hi_var, note_L1_#v(labelN)
+
+   endif
+
+   movlw lo                      ; begin lo loop
+   movwf note_lo_var
+
+note_L3_#v(labelN)
+   wave_fn GPn, hz
+
+   decfsz note_lo_var, F
+
+   goto note_L3_#v(labelN)       ; end lo loop
+
+   waitl (cpu_ips / .20)
+
+   endm
+
+;
+;
+; picsong main
+;
+;
+
+main:
+
+   bsf STATUS, RP0   ; select bank 1
+
+   clrf ANSEL        ; clear the analog input selector
+   clrf TRISIO       ; set all general i/o to output
+
+   bcf STATUS, RP0   ; select bank 0
+
+   movlw B'111'      ; load W with the comparator disabled configuration 
+   movwf CMCON       ; load the comparator configuration from W
+
+   clrf GPIO         ; set all i/o pins to low
+
+coda:   
+
+   bsf GPIO, GP2     ; set GP2 to high
+
+   include "picsong.inc"
+
+   goto coda
+
+	end

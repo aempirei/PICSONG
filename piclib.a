@@ -1,0 +1,138 @@
+;
+; my own shitty PIC library
+;
+; Copyright(c) 2008 by Christopher Abad
+; aempirei@gmail.com
+;
+
+   radix dec
+
+cpu_mhz                 equ   .4
+cpu_hz                  equ   cpu_mhz * .1000000
+cycles_per_instruction  equ   .4
+cpmi                    equ   cycles_per_instruction * .1000000 ; cycles per million instructions
+cpu_ips                 equ   cpu_hz / cycles_per_instruction
+cpu_mips                equ   cpu_hz / cpmi
+
+ifndef PICLIB_BASE
+PICLIB_BASE             equ   0x40
+endif
+
+pl_wait1_var   equ      (PICLIB_BASE + 0x00)
+pl_wait2_var   equ      (PICLIB_BASE + 0x01)
+
+movlf macro a, b     ; mov literal (a) to f (b) through w
+   movlw a           ; load literal into w
+   movwf b           ; load w into b
+   endm
+
+movff macro a, b     ; mov a to b through w (2)
+   movf a, W         ; load a into w
+   movwf b           ; load w into b
+   endm
+
+cmplfe macro a, b    ; (2) compare if a literal (a) and fr (b) Z=1 is equal C=1 means L > F (a > b)
+   movlw a           ; move literal to w
+   subwf y, W        ; subtract w from w, storing result in W, and setting STATUS bits C, DC, Z
+   endm
+
+cmpffe macro a, b    ; same as cmplfe except a and b are both file registers
+   movf a, W
+   subwf b, W
+   endm
+
+loopf macro r, l     ; (3r - 1) loop to label <l> while register <r> is non-zero, decrement then compare
+   decfsz r, F
+   goto l
+   endm
+
+;
+; nopsl
+;
+
+nopsl macro a        ; (a) wait a instructions [0,inf)
+   if (a > 1)
+      nopsl (a >> 1)
+      nopsl (a >> 1)
+   endif
+   if (a & 1)
+      nop
+   endif
+   endm
+
+;
+; wait1l - wait for 3a + 5 instructions [1,255] -> [8,770]
+; corrupts W, Z
+;
+
+wait1l macro a                      ; = 3a + 5
+   movlw a                          ; 1
+   call wait1l_fn                   ; 2 + 3a + 2 = 3a + 4
+   endm
+
+;
+; wait1f - wait for 3a + 5 instructions [1,255] -> [8,770]
+; corrupts W, Z
+;
+
+wait1f macro a                      ; = 3a + 5
+   movf a, F                        ; 1
+   call wait1l_fn                   ; 2 + 3a + 2 = 3a + 4
+   endm
+
+wait1l_fn:                          ; = 3a + 2
+   movwf pl_wait1_var               ; 1
+wait1l_L1:                          ; = 3a + 1
+   loopf pl_wait1_var, wait1l_L1    ; 3a - 1
+   return                           ; 2
+
+;
+; wait2l - wait for 773 + 5 instructions [1,255] -> [778,196120]
+;
+
+wait2l macro a                      ; = 773a + 4 + 1 = 773a + 5
+   movlw a                          ; 1
+   call wait2l_fn                   ; 773a + 2 + 2 = 773a + 4
+   endm
+
+wait2l_fn:                          ; = 773a + 1 + 1 = 773a + 2
+   movwf pl_wait2_var               ; 1
+wait2l_L1:                          ; = 770a + 3a - 1 + 2 = 773a + 1
+   wait1l .255                      ; a*(3*255 + 5) = a(3*255 + 5) = 770a
+   loopf pl_wait2_var, wait2l_L1    ; 3a - 1
+   return                           ; 2
+
+;
+; waitl - wait exactly a instructions [0,196120]
+;
+
+waitl macro instr
+
+   local n = (instr-.5)/.773
+   local instr2 = instr-(.773*n+.5)
+   local o = (instr2-.5)/3
+   local p = instr2-(o*.3+.5)
+
+   if instr < 0
+      error "waitl - instr < 0"
+   endif      
+
+   if instr > 196120
+      error "waitl - instr > 196120"
+   endif
+
+   if n > 0
+      wait2l n
+   endif
+
+   if n > 0
+      wait1l o
+   endif
+
+   nopsl p
+
+   endm
+
+
+
+   

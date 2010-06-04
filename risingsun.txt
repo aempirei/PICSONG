@@ -1,0 +1,14 @@
+tempo = 300
+envelope = 0 8 8 8  6 6 2 0
+music =
+
+1e4 5e4
+1f#4 5g4
+1b4 1a4 1e4 7e4
+1e5 
+5e5 1e5 4d5
+1b4 1a4 9b4 
+1b4 1d5
+
+5e5 1e5 1d5 2g4 1b4 1a4 2e4 2e4 5g4 1e4
+5e4 1e4 1d#4 2b3 2f#4 6e4 
