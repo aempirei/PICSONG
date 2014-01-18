@@ -96,12 +96,16 @@ note_L3_#v(labelN)
 
 main:
 
-   bsf STATUS, RP0   ; select bank 1
+   ; bsf STATUS, RP0   ; select bank 1
+
+   BANKSEL ANSEL
 
    clrf ANSEL        ; clear the analog input selector
    clrf TRISIO       ; set all general i/o to output
 
-   bcf STATUS, RP0   ; select bank 0
+   ; bcf STATUS, RP0   ; select bank 0
+   BANKSEL CMCON
+
 
    movlw B'111'      ; load W with the comparator disabled configuration 
    movwf CMCON       ; load the comparator configuration from W

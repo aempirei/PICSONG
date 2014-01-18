@@ -50,16 +50,8 @@ the schematic is as follows:
    pin 5 - LED out
    pin 8 - ground
 
-just do:
-
-   ./program-p12f675.sh risingsun.txt
-
-   or whatever song
-
-   i think i put 3 songs, stjames.txt, swinglow.txt and risingsun.txt
+just type make and it will do whatever.
+edit the Makefile to change the song.
 
 thanks,
 aempirei
-
-
-
